@@ -76,6 +76,8 @@ public class FernCleaner {
     private static class MethodChangerVisitor extends VoidVisitorAdapter<Object> {
 
         // i did all of this shit by trial and error, don't complain if something's seriously wrong
+        
+        // TODO: no support for constructors yet
 
         private final HashMap<String, String> variablesMap = new HashMap<>();
         private final HashMap<String, Integer> lastVarIndex = new HashMap<>();
