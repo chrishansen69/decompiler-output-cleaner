@@ -191,6 +191,10 @@ public class FernCleaner {
                     return "lo";
                 else if (type.equals("short"))
                     return "s";
+                else if (type.equals("float"))
+                    return "f";
+                else if (type.equals("double"))
+                    return "d";
                 else
                     return type;
             } else {
@@ -200,6 +204,10 @@ public class FernCleaner {
                     return "lo" + varIndex;
                 else if (type.equals("short"))
                     return "s" + varIndex;
+                else if (type.equals("float"))
+                    return "f" + varIndex;
+                else if (type.equals("double"))
+                    return "d" + varIndex;
                 else
                     return type + varIndex;
             }
