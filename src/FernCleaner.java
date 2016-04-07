@@ -17,15 +17,14 @@ public class FernCleaner {
         final BufferedReader r = new BufferedReader(new FileReader("F51.java"));
 
         final StringBuilder s = new StringBuilder();
-        while (true) {
-            final String a = r.readLine();
-            if (a == null) {
-                break;
-            }
+        String a = null;
+        while (a != null) {
+            a = r.readLine();
             s.append(a);
         }
 
         r.close();
+        System.out.println("got here1");
 
         final ASTParser parser = ASTParser.newParser(AST.JLS8);
         parser.setSource(s.toString().toCharArray());
@@ -33,6 +32,8 @@ public class FernCleaner {
         parser.setKind(ASTParser.K_COMPILATION_UNIT);
         //ASTNode node = parser.createAST(null);
         final CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+        
+        System.out.println("got here");
 
         cu.accept(new ASTVisitor() {
 
