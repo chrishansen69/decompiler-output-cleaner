@@ -44,6 +44,8 @@ public class FernCleaner {
             for (final File f : chooser.getSelectedFiles()) {
                 writeToFile(f);
             }
+        } else {
+            writeToFile(new File("./F51.java"));
         }
 
     }
@@ -231,6 +233,10 @@ public class FernCleaner {
                     return "f";
                 else if (type.equals("double"))
                     return "d";
+                else if (type.equals("boolean"))
+                    return "flag";
+                else if (type.equals("char"))
+                    return "ch";
                 else
                     return type;
             } else {
@@ -244,6 +250,10 @@ public class FernCleaner {
                     return "f" + varIndex;
                 else if (type.equals("double"))
                     return "d" + varIndex;
+                else if (type.equals("boolean"))
+                    return "flag" + varIndex;
+                else if (type.equals("char"))
+                    return "ch" + varIndex;
                 else
                     return type + varIndex;
             }
