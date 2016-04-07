@@ -73,18 +73,34 @@ public class FernCleaner {
         pw.close();
     }
 
+    /**
+     * @author rafa1231518, borrowing as much as possible from the examples for JavaParser
+     */
     private static class MethodChangerVisitor extends VoidVisitorAdapter<Object> {
 
         // i did all of this shit by trial and error, don't complain if something's seriously wrong
         
         // TODO: no support for constructors yet
 
+        /**
+         * Stores current variable names in the order {@literal <PREVIOUS, REPLACEMENT>}
+         */
         private final HashMap<String, String> variablesMap = new HashMap<>();
+
+        /**
+         * Stores the amount of variables in the order {@literal <TYPE, AMOUNT>}
+         */
         private final HashMap<String, Integer> lastVarIndex = new HashMap<>();
 
+        /**
+         * True if inside a method, enables the variable name changing
+         */
         private boolean inMethod = false;
 
-        private final static String[] i_types = {
+        /**
+         * Short names for ints (i, j, k, l, i1, j1, k1, l1, ...) only these four are used to avoid name conflicts (for example, there should not be m, t, x, y, z...)
+         */
+        private final static String[] INT_SHORTNAMES = {
                 "i", "j", "k", "l"
         };
 
@@ -93,11 +109,9 @@ public class FernCleaner {
             // this needs to be called otherwise it fucks up all other method calls
             super.visit(n, arg);
 
+            // a new method, a fresh start
             variablesMap.clear();
             lastVarIndex.clear();
-
-            // change the name of the method to upper case
-            //n.setName(n.getName().toUpperCase());
 
             final List<Parameter> params = new ArrayList<>(n.getParameters());
 
@@ -106,7 +120,7 @@ public class FernCleaner {
                 System.out.println("type of parameter: " + param.getType()); //turns out this works, since it extends node which is... just a blob of text... who would have guessed
 
                 final String parameterName = varDec.getName();
-                if (parameterName.startsWith("var")) {
+                if (parameterName.startsWith("var")) { //if it's fernflower output
                     varDec.setName(putIfNotExists(param, parameterName));
                 }
             }
@@ -134,7 +148,7 @@ public class FernCleaner {
                 final VariableDeclaratorId varDec = varHandle.getId(); //var name
                 final String varName = varDec.getName();
                 System.out.println("declarated name: " + varName);
-                if (varName.startsWith("var")) {
+                if (varName.startsWith("var")) { //if it's fernflower output
                     varDec.setName(putIfNotExists(n, varName));
                 }
             }
@@ -193,9 +207,7 @@ public class FernCleaner {
             if (a == null) {
                 a = fixArray(getTypeAndIncrement(type));
                 variablesMap.put(varName, a);
-            } /* else {
-                 lastVarIndex.put(type, lastVarIndex.get(type) + 1);
-              }*/
+            }
             return a;
         }
 
@@ -212,18 +224,26 @@ public class FernCleaner {
         private String getTypeAndIncrement(final String type) {
             incrementIfNotExists(type);
 
-            final String varIndex = getVarIndex(lastVarIndex.get(type), type.toLowerCase());
-
-            final String a = varIndex;
-            return a;
+            return getVarIndex(lastVarIndex.get(type), type.toLowerCase());
         }
 
+        /**
+         * Gives you a nifty name for a variable based on whatever type you give it<br>
+         * <br>
+         * <b>{@literal << WARNING >>}</b><br>
+         * This method will likely not handle {@literal <?>} properly.<br>
+         * This method will likely not handle two multi-dimensional arrays (one 1-dimensional, one 2-dimensional...) of the same type properly, since they will be considered different types. You'll need to fix {@link #fixArray(String)} yourself.
+         * 
+         * @param varIndex preferably use with {@link #lastVarIndex}
+         * @param type the type of the variable (int, long, short, String, ExpandDong, etc...)
+         * @return a nifty name for a variable
+         */
         private String getVarIndex(final int varIndex, final String type) {
             if (type.equals("int")) {
-                if (varIndex <= i_types.length)
-                    return i_types[varIndex - 1];
+                if (varIndex <= INT_SHORTNAMES.length)
+                    return INT_SHORTNAMES[varIndex - 1];
                 else
-                    return i_types[(varIndex - 1) % i_types.length] + varIndex / i_types.length;
+                    return INT_SHORTNAMES[(varIndex - 1) % INT_SHORTNAMES.length] + varIndex / INT_SHORTNAMES.length;
             } else if (varIndex == 1) {
                 if (type.equals("byte"))
                     return "b";
@@ -261,6 +281,11 @@ public class FernCleaner {
             }
         }
 
+        /**
+         * Increments lastVarIndex. Meaningless code, really, but I don't care
+         * 
+         * @param type The type of the variable to be incremented
+         */
         private void incrementIfNotExists(final String type) {
             final Integer vType = lastVarIndex.get(type);
             if (vType != null) {
