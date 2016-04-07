@@ -1635,6 +1635,25 @@ public class F51 extends Applet implements Runnable {
 			u.up = true;
 		}
 
+        int var3;
+        int var4;
+        int var5;
+        int var6;
+        int var7;
+        int var8;
+        int var9;
+        int var10;
+        int var11;
+        int var12;
+        int var13;
+        int var14;
+        int var15;
+        int var16;
+        int var17;
+        int var18;
+        int var19;
+        int var20;
+
 		return false;
 	}
 }

@@ -44,6 +44,10 @@ public class FernCleaner {
         private final HashMap<String, Integer> lastVarIndex = new HashMap<>();
         
         private boolean inMethod = false;
+        
+        private final static String[] i_types = {
+                "i", "j", "k", "l"
+        };
 
         @Override
         public void visit(final MethodDeclaration n, final Object arg) {
@@ -168,14 +172,39 @@ public class FernCleaner {
         private String getTypeAndIncrement(final String type) {
             incrementIfNotExists(type);
             
-            String varIndex = lastVarIndex.get(type).toString();
-            if (varIndex.equals("1")) varIndex = "";
+            String varIndex = getVarIndex(lastVarIndex.get(type), type.toLowerCase());
             
-            
-            String a = type.toLowerCase() + varIndex;
+            String a = varIndex;
             return a;
         }
         
+        private String getVarIndex(int varIndex, String type) {
+            if (type.equals("int")) {
+                if (varIndex <= i_types.length)
+                    return i_types[varIndex - 1];
+                else
+                    return i_types[(varIndex - 1) % i_types.length] + (varIndex / i_types.length);
+            } else if (varIndex == 1) {
+                if (type.equals("byte"))
+                    return "b";
+                else if (type.equals("long"))
+                    return "lo";
+                else if (type.equals("short"))
+                    return "s";
+                else
+                    return type;
+            } else {
+                if (type.equals("byte"))
+                    return "b" + varIndex;
+                else if (type.equals("long"))
+                    return "lo" + varIndex;
+                else if (type.equals("short"))
+                    return "s" + varIndex;
+                else
+                    return type + varIndex;
+            }
+        }
+
         private void incrementIfNotExists(final String type) {
             Integer vType = lastVarIndex.get(type);
             if (vType != null)
