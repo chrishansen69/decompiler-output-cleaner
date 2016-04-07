@@ -1,13 +1,23 @@
-import java.io.FileInputStream;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import com.github.javaparser.JavaParser;
-import com.github.javaparser.ast.CompilationUnit;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
+import org.eclipse.jdt.ui.refactoring.RenameSupport;
+
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.body.VariableDeclaratorId;
+import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
@@ -15,18 +25,45 @@ public class FernCleaner {
 
     public static void main(final String[] args) throws Exception {
         // creates an input stream for the file to be parsed
-        final FileInputStream in = new FileInputStream("F51.java");
-
-        CompilationUnit cu;
-        try {
-            // parse the file
-            cu = JavaParser.parse(in);
-        } finally {
-            in.close();
+        final BufferedReader r = new BufferedReader(new FileReader("F51.java"));
+        
+        StringBuilder s = new StringBuilder();
+        while(true) {
+            String a = r.readLine();
+            if (a == null) break;
+            s.append(a);
         }
+        
+        r.close();
+        
+        
 
-        // visit and change the methods names and parameters
-        new MethodChangerVisitor().visit(cu, null);
+        ASTParser parser = ASTParser.newParser(AST.JLS8);
+        parser.setSource(s.toString().toCharArray());
+
+        parser.setKind(ASTParser.K_COMPILATION_UNIT);
+        //ASTNode node = parser.createAST(null);
+        final CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+        
+        cu.accept(new ASTVisitor() {
+ 
+            Set<String> names = new HashSet<String>();
+ 
+            public boolean visit(VariableDeclarationFragment node) {
+                SimpleName name = node.getName();
+                this.names.add(name.getIdentifier());
+                System.out.println("Declaration of '"+name+"' at line"+cu.getLineNumber(name.getStartPosition()));
+                return false; // do not continue to avoid usage info
+            }
+ 
+            public boolean visit(SimpleName node) {
+                if (this.names.contains(node.getIdentifier())) {
+                System.out.println("Usage of '" + node + "' at line " + cu.getLineNumber(node.getStartPosition()));
+                }
+                return true;
+            }
+ 
+        });
 
         // prints the changed compilation unit
         System.out.println(cu.toString());
@@ -95,5 +132,7 @@ public class FernCleaner {
             //    System.out.println("Variable Name: "+vars.getId().getName());
             //}
         }
+        
+        // TODO possibly visit(final NameExpr ?
     }
 }
