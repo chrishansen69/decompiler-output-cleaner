@@ -74,7 +74,7 @@ public class FernCleaner {
     }
 
     /**
-     * @author rafa1231518, borrowing as much as possible from the examples for JavaParser
+     * @author uwx, borrowing as much as possible from the examples for JavaParser
      */
     private static class MethodChangerVisitor extends VoidVisitorAdapter<Object> {
 
